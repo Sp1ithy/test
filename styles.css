@@ -1,0 +1,4 @@
+.collapse-over{
+    position: absolute;  /* Или relative, в зависимости от вашего случая */
+    z-index: 1000;  /* Высокий z-index для открытия поверх других элементов */
+}

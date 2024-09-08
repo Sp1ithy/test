@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban Board</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .kanban-column {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      min-height: 400px;
+      margin-right: 10px;
+      background-color: #f8f9fa;
+    }
+
+    .kanban-card {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: grab;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .kanban-card.dragging {
+      opacity: 0.5;
+    }
+
+    .kanban-column.over {
+      border: 2px dashed #007bff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container my-5">
+  <div class="row">
+    <!-- To Do Column -->
+    <div class="col-md-4">
+      <div class="kanban-column" id="todo">
+        <h4>To Do</h4>
+        <div class="kanban-card" draggable="true">Task 1</div>
+        <div class="kanban-card" draggable="true">Task 2</div>
+      </div>
+    </div>
+    <!-- In Progress Column -->
+    <div class="col-md-4">
+      <div class="kanban-column" id="in-progress">
+        <h4>In Progress</h4>
+        <div class="kanban-card" draggable="true">Task 3</div>
+      </div>
+    </div>
+    <!-- Done Column -->
+    <div class="col-md-4">
+      <div class="kanban-column" id="done">
+        <h4>Done</h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Variables to store active card and its initial position
+  let activeCard = null;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  // Function to handle desktop drag-and-drop
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      activeCard = e.target;
+      setTimeout(() => {
+        e.target.classList.add('dragging');
+      }, 0);
+    });
+
+    card.addEventListener('dragend', () => {
+      activeCard.classList.remove('dragging');
+      activeCard = null;
+    });
+  });
+
+  // Handle drag over and drop on columns
+  document.querySelectorAll('.kanban-column').forEach(column => {
+    column.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      column.classList.add('over');
+    });
+
+    column.addEventListener('dragleave', () => {
+      column.classList.remove('over');
+    });
+
+    column.addEventListener('drop', (e) => {
+      e.preventDefault();
+      column.classList.remove('over');
+      if (activeCard) {
+        column.appendChild(activeCard);
+      }
+    });
+  });
+
+  // Handle mobile touch events for dragging
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('touchstart', (e) => {
+      activeCard = e.target;
+      const touch = e.touches[0];
+      offsetX = touch.clientX - activeCard.getBoundingClientRect().left;
+      offsetY = touch.clientY - activeCard.getBoundingClientRect().top;
+      activeCard.classList.add('dragging');
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (activeCard) {
+        const touch = e.touches[0];
+        activeCard.style.position = 'absolute';
+        activeCard.style.left = `${touch.clientX - offsetX}px`;
+        activeCard.style.top = `${touch.clientY - offsetY}px`;
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('touchend', (e) => {
+      if (activeCard) {
+        const column = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        if (column && column.classList.contains('kanban-column')) {
+          column.appendChild(activeCard);
+        }
+        activeCard.classList.remove('dragging');
+        activeCard.style.position = 'static';
+        activeCard = null;
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
